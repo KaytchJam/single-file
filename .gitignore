@@ -1,2 +1,5 @@
+# Mainly blocking artifacts
 .*~
-
+**/*.exe
+**/*.o
+**/.*~
