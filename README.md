@@ -3,7 +3,7 @@ Repository for single-file snippets of code. Mostly for testing, but sometimes I
 Span across different languages. If you'd like to compile them here's a reminder for the languages I have:
 
 ```C++
-// C++
+// C++ (GCC Compiler)
 g++ <file_name> -o <executable_name>
 ```
 
