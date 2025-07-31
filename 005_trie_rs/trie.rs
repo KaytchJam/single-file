@@ -12,16 +12,15 @@ struct TrieNode {
 /** TrieNode functions */
 impl TrieNode {
 	/** Create a new `TrieNode`. This node is assumed to be a terminal node with 0 children. */
-	pub fn new(c: char) -> TrieNode {
+	pub fn new(c: char, t_state: bool) -> TrieNode {
 		return TrieNode {
 			character: c,
-			terminal: true,
+			terminal: t_state,
 			children: HashMap::new()
 		};
 	}
 
 	pub fn add_child(&mut self, child: char, index: usize) -> Option<usize> {
-		self.terminal = false;
 		return self.children.insert(child, index);
 	}
 
@@ -35,6 +34,11 @@ impl TrieNode {
 		return self.terminal;
 	}
 
+        pub fn set_terminal(&mut self, terminal_state: bool) -> &mut Self {
+            self.terminal = terminal_state;
+            return self;
+        }
+
 	pub fn iter_children(&self) -> Iter<'_, char, usize> {
 		return self.children.iter();
 	}
@@ -42,14 +46,6 @@ impl TrieNode {
         pub fn child_index(&self, child: &char) -> Option<usize> {
                 return self.children.get(&child).and_then(|c| Some(*c));
         }
-
-	// pub fn index_of(&self, child: char) -> Option<&usize> {
-	// 	return self.children.get(&child);
-	// }
-
-	// pub fn index_of_mut(&mut self, child: char) -> Option<&mut usize> {
-	// 	return self.children.get_mut(&child);
-	// }
 }
 
 /** The actual trie */
@@ -61,7 +57,7 @@ struct Trie {
 impl Trie {
 	pub fn new() -> Trie {
 		return Trie {
-			data: vec![TrieNode::new('R')] // 'R' for Rhut
+			data: vec![TrieNode::new('R', false)] // 'R' for Rhut
 		};
 	}
 
@@ -74,7 +70,7 @@ impl Trie {
 	}
         
         /** Traverses a Trie given a word until the terminal node is found. Returns the terminal
-         * node index and a character iterator */
+         * node index, the character before the iteration broke, and the used character iterator */
         fn find_terminal<'t, 'w>(&'t self, word: &'w str) -> (usize, Option<char>, Chars<'w>) {
                 let mut vanguard_idx: usize = 0;
                 let mut char_iter: Chars<'w> = word.chars();   
@@ -94,26 +90,43 @@ impl Trie {
         fn append_child(&mut self, node_idx: usize, child: char) -> usize {
             let new_idx: usize = self.data.len();
             let _ = self.get_node_mut(node_idx).add_child(child.clone(), new_idx);
-            self.data.push(TrieNode::new(child));
+            self.data.push(TrieNode::new(child, false));
             return new_idx;
         }
 
         /** Adds a word into our Trie */
 	pub fn add(&mut self, word: &str) {
 		let (mut vanguard_idx, copt, mut char_iter) = self.find_terminal(word);
-
-                if copt.is_some() {
-                        vanguard_idx = self.append_child(vanguard_idx, copt.unwrap());
+                match copt {
+                    Some(c) => { vanguard_idx = self.append_child(vanguard_idx, c); },
+                    None => { self.get_node_mut(vanguard_idx).set_terminal(true); }
                 }
-
+    
 		for c in char_iter {
 		        vanguard_idx = self.append_child(vanguard_idx, c);	
                 }
+
+                self.get_node_mut(vanguard_idx).set_terminal(true);
 	}
 
         /** Returns the number of letters within our trie */
         pub fn letters(&self) -> usize {
                 return self.data.len() - 1;
+        }
+
+        /** Does our trie contain the word */
+        pub fn contains(&self, word: &str) -> bool {
+            let mut cur_node: usize = 0;
+            for c in word.chars() {
+                let child_idx: Option<usize> = self.get_node(cur_node).child_index(&c);
+                if child_idx.is_none() {
+                    return false;
+                }
+
+                cur_node = child_idx.unwrap();
+            }
+
+            return self.get_node(cur_node).is_terminal();
         }
 
 }
@@ -124,5 +137,11 @@ fn main() {
         t.add("hoorah");
         t.add("hoe");
         t.add("horrible");
-        print!("{:?}\n", t);
+        t.add("hoo");
+
+        let target: &'static str = "hoo";
+        print!("Our trie {} contain the word {}",
+            if t.contains(target) { "does" } else { "does not" },
+            target
+        );
 }
