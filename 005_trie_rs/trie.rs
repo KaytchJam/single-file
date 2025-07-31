@@ -1,5 +1,7 @@
 use std::collections::hash_map::{HashMap, Iter};
 use std::str::Chars;
+use std::iter::FromIterator;
+use std::ops::Deref;
 
 /** Basic Node for our Trie data structure */
 #[derive(Debug)]
@@ -172,8 +174,8 @@ impl<'p> Words<'p> {
 
         fn next_word(&mut self) -> Option<String> {
                 while self.stack.len() > 0 {
-                let front: &mut std::collections::hash_map::Iter<'p,char,usize> = self.top();
-                let child = front.next();
+                        let front: &mut std::collections::hash_map::Iter<'p,char,usize> = self.top();
+                        let child = front.next();
 
                         match child {
                                 Some(c) => { 
@@ -203,21 +205,29 @@ impl<'p> Iterator for Words<'p> {
         }
 }
 
-fn main() {
-	let mut t: Trie = Trie::new();
-	t.add("hooray");
-        t.add("hoorah");
-        t.add("hoe");
-        t.add("horrible");
-        t.add("hoo");
+impl<S> FromIterator<S> for Trie
+where S: AsRef<str> {
+    fn from_iter<I: IntoIterator<Item = S>>(iter: I) -> Self {
+        let mut t = Trie::new();
+        for i in iter {
+            t.add(i.as_ref());
+        }
+        t
+    }
+}
 
+
+fn main() {
+	let mut t: Trie = ["hooray", "hoorah", "hoe", "horrible", "hoo"].into_iter().collect::<Trie>();
         let target: &'static str = "hoo";
+
         println!("Our trie {} contain the word {}.",
             if t.contains(target) { "does" } else { "does not" },
             target
         );
 
-        for word in t.words() {
-                println!("{}", word);
+        let V = t.words().collect::<Vec<String>>();
+        for (idx, word) in V.into_iter().enumerate() {
+                println!("{}: {}", idx, word);
         }
 }
