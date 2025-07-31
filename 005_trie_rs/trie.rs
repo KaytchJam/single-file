@@ -172,7 +172,7 @@ impl<'p> Words<'p> {
 
         fn next_word(&mut self) -> Option<String> {
                 while self.stack.len() > 0 {
-                        let front: &mut std::collections::hash_map::Iter<'p,char,usize> = self.top();
+                let front: &mut std::collections::hash_map::Iter<'p,char,usize> = self.top();
                         let child = front.next();
 
                         match child {
@@ -197,13 +197,8 @@ impl<'p> Words<'p> {
 
 impl<'p> Iterator for Words<'p> {
         type Item = String;
-    // our item is a string slice of the current String held by the iterator
-    // if the user wants to store the string elsewhere they need to call to_owned() on it or smthn
 
         fn next(&mut self) -> Option<Self::Item> {
-        // how do we iterate? recursive exploration of child nodes
-        // need to append previous chars as we descend. pop off as we ascend back
-        // return word formed as string when we hit a "terminal" node
                 return self.next_word();
         }
 }
