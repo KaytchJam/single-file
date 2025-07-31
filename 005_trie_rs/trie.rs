@@ -173,7 +173,7 @@ impl<'p> Words<'p> {
         fn next_word(&mut self) -> Option<String> {
                 while self.stack.len() > 0 {
                 let front: &mut std::collections::hash_map::Iter<'p,char,usize> = self.top();
-                        let child = front.next();
+                let child = front.next();
 
                         match child {
                                 Some(c) => { 
