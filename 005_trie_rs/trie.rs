@@ -212,7 +212,8 @@ where S: AsRef<str> {
         for i in iter {
             t.add(i.as_ref());
         }
-        t
+
+        return t;
     }
 }
 
