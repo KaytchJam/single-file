@@ -67,7 +67,7 @@ impl Trie {
         /** Construct an empty Trie */
 	pub fn new() -> Trie {
 		return Trie {
-			data: vec![TrieNode::new('R', false)] // 'R' for Rhut
+			data: vec![TrieNode::new('*', false)] // 'R' for Rhut
 		};
 	}
         
