@@ -56,26 +56,26 @@ struct sub_vector {
 	size_t m_start;
 	size_t m_size;
 
-	static sub_vector<T> subvec(size_t start, size_t size) {
+	inline static sub_vector<T> subvec(size_t start, size_t size) {
 		return sub_vector {
 			start,
 			size
 		};
 	}
 
-	T& index(std::vector<T>& parent, const size_t idx) {
+	inline T& index(std::vector<T>& parent, const size_t idx) {
 		return (parent)[idx + m_start];
 	}
 
-	const T& index(std::vector<T>& parent, const size_t idx) const {
+	inline const T& index(std::vector<T>& parent, const size_t idx) const {
 		return (parent)[idx + m_start];
 	}
 
-	size_t size() const {
+	inline size_t size() const {
 		return m_size;
 	}
 
-	std::array<sub_vector<T>, 2> halves() const {
+	inline std::array<sub_vector<T>, 2> halves() const {
 		const size_t hs = m_size / 2;
 		return {
 			sub_vector<T>::subvec(m_start, hs),
@@ -83,11 +83,11 @@ struct sub_vector {
 		};
 	}
 
-	sub_vector<T> first_half() const {
+	inline sub_vector<T> first_half() const {
 		return sub_vector<T>::subvec(m_start, m_size / 2);
 	}
 
-	sub_vector<T> second_half() const {
+	inline sub_vector<T> second_half() const {
 		const size_t hs = m_size / 2;
 		return sub_vector<T>::subvec(m_start + hs, m_size - hs);
 	}
