@@ -6,3 +6,6 @@
 **/*.pdb
 **/*.swp
 .vscode
+**/*.csv
+**/*.txt
+**/__pycache__
