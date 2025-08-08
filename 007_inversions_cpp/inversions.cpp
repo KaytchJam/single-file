@@ -91,6 +91,10 @@ struct sub_vector {
 		const size_t hs = m_size / 2;
 		return sub_vector<T>::subvec(m_start + hs, m_size - hs);
 	}
+
+	inline bool within(const sub_vector<T>& wrapper) const {
+		return this->m_start >= wrapper.m_start && this->m_size <= wrapper.m_size;
+	}
 };
 
 /** Recursive approach that creates many small vector buffers */
@@ -180,6 +184,7 @@ size_t inversions_epic(const std::vector<O>& v) {
 
 	while (subvecs.size() > 0) {
 		ms_plate& p = subvecs.top();
+
 		if (p.range.size() > 1) {
 			if (!p.visited) {
 				std::array<sub_vector<O>,2> parts = p.range.halves();
@@ -243,7 +248,7 @@ void to_csv(long long *data, size_t rows, size_t cols, const char* fname, std::a
 	{
 		int local_i = 0;
 		for (const char* c : titles) {
-			f << c << ((local_i == 2) ? "\n" : ",");
+			f << c << ((local_i == (rows - 1)) ? "\n" : ",");
 			local_i++;
 		}
 
@@ -251,7 +256,7 @@ void to_csv(long long *data, size_t rows, size_t cols, const char* fname, std::a
 
 	for (size_t j = 0; j < cols; j++) {
 		for (size_t i = 0; i < rows; i++) {
-			f << data[i * cols + j] << ((i == 2) ? "\n" : ",");
+			f << data[i * cols + j] << ((i == (rows - 1)) ? "\n" : ",");
 		}
 	}
 }
@@ -262,15 +267,16 @@ int main() {
 	using std::chrono::duration;
 	using std::chrono::milliseconds;
 	
-	constexpr size_t intial_size = 10;
-	constexpr size_t runs = 15;
-	long long data[3][runs];
+	constexpr size_t intial_size = 11;
+	constexpr size_t runs = 1;
+	constexpr size_t experiments = 3;
+	long long data[experiments][runs];
 	
 	size_t s = intial_size;
 	for (size_t n = 0; n < runs; n++) {
 		std::cout << "\n(" << (n+1) << ") INVERSIONS COMPARISON FOR [n = " << s << "] ELEMENTS." << std::endl;
 		std::cout << "==============================" << std::endl;
-		std::vector<float> v = /*print_vec(*/random_std_vector<float>(s, 0.f, 50.f)/*)*/;
+		std::vector<float> v = print_vec(random_std_vector<float>(s, 0.f, 50.f));
 		
 		{
 			const auto t1 = high_resolution_clock::now();
@@ -305,10 +311,21 @@ int main() {
 			data[2][n] = ms_int.count();
 		}
 
+		// {
+		// 	const auto t1 = high_resolution_clock::now();
+		// 	const size_t inv = inversions_legendary(v);
+		// 	const auto t2 = high_resolution_clock::now();
+	
+		// 	const auto ms_int = duration_cast<milliseconds>(t2 - t1);
+		// 	std::cout << "\ninversions_legendary took " << ms_int.count() << "ms\n";
+		// 	std::cout << "# of inversions = " << inv << std::endl;
+		// 	data[3][n] = ms_int.count();
+		// }
+
 		s *= 2;
 	}
 
-	std::array<const char*, 3> cols = {"inversions_naive", "inversions_epic", "inversions_aight"};
-	to_csv(&data[0][0], 3, runs, "./msort_benchmark.csv", cols);
+	std::array<const char*, experiments> cols = {"inversions_naive", "inversions_epic", "inversions_aight"};
+	to_csv(&data[0][0], experiments, runs, "./msort_benchmark.csv", cols);
 	return EXIT_SUCCESS;	
 }
