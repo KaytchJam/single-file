@@ -5,6 +5,7 @@
 #include <array>
 #include <random>
 #include <chrono>
+#include <unordered_set>
 
 // continuation of my recap of algorithm notes. revisiting the selection algorithm
 
@@ -113,6 +114,46 @@ O selection_simple(const std::vector<O>& v, size_t k) {
     std::vector<O> w(v);
     std::sort(w.begin(), w.end());
     return w[k];
+}
+
+template <typename O>
+const O* find_smallest(const std::vector<O>& v) {
+    const O* smallest = nullptr;
+    for (const O& o : v) {
+        if (smallest == nullptr || o < (*smallest)) {
+            smallest = &o;
+        }
+    }
+
+    return smallest;
+}
+
+template <typename O>
+const O* find_next_smallest(const std::vector<O>& v, const O* prev_smallest) {
+    const O* next_smallest = nullptr;
+    for (const O& o : v) {
+        const bool is_null = next_smallest == nullptr;
+        if ((is_null && (o > (*prev_smallest))) || (!is_null && o < (*next_smallest) && o > (*prev_smallest))) {
+            next_smallest = &o;
+        }
+    }
+
+    return next_smallest;
+}
+
+/** Does k passes through the array, updating the smallest item found each pass.
+ * The input std::vector can have duplicates.
+ */
+template <typename O>
+O selection_naive(const std::vector<O>& v, size_t k) {
+    size_t kth = 0;
+    const O* kth_item = find_smallest(v);
+    while (kth < v.size() && kth < k) {
+        kth_item = find_next_smallest(v, kth_item);
+        kth += 1;
+    }
+
+    return (*kth_item);
 }
 
 /** Integer divison that goes to the ceiling instead of the floor */
@@ -319,6 +360,27 @@ std::vector<int> random_std_vector<int>(const size_t elems, const int lower, con
 	return V;
 }
 
+
+std::vector<size_t> random_std_vector_no_dupes(const size_t elems) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, elems * 10);
+    std::unordered_set<size_t> bag;
+	
+	std::vector<size_t> V(elems);
+	for (size_t i = 0; i < elems; i++) {
+        int rng_out = dis(gen);
+        while (bag.find(rng_out) != bag.end()) {
+            rng_out = dis(gen);
+        }
+
+        bag.emplace(rng_out);
+        V[i] = rng_out;
+	}
+
+	return V;
+}
+
 // What if we want to return a reference to the object in the list
 // and not a copy of it?
 // 
@@ -331,9 +393,12 @@ int main() {
 	using std::chrono::duration;
 	using std::chrono::milliseconds;
 
-    constexpr size_t size = 1'000'000;
-    std::vector<int> v = random_std_vector(size, 0, (int) size);
+    constexpr size_t size = 100'000;
+    std::vector<size_t> v = random_std_vector_no_dupes(size);
     const size_t k = size / 2ull;
+
+    // all the following assuming the vector has NO DUPLICATES (except for select_naive which works for both!)
+    std::cout << "random vector (no duplicates) of size N = " << size << std::endl;
 
     {
         const auto t1 = high_resolution_clock::now();
@@ -357,6 +422,16 @@ int main() {
 
     {
         const auto t1 = high_resolution_clock::now();
+        const size_t kth_smallest = selection_naive(v, k);
+        const auto t2 = high_resolution_clock::now();
+
+        const auto ms_int = duration_cast<milliseconds>(t2 - t1);
+        std::cout << "\nselection_naive took " << ms_int.count() << "ms\n";
+        std::cout << "kth smallest value where [k = " << k << "]: " << kth_smallest << std::endl;
+    }
+    
+    {
+        const auto t1 = high_resolution_clock::now();
         const size_t kth_smallest = selection_linear_mut(v, k);
         const auto t2 = high_resolution_clock::now();
 
@@ -364,6 +439,7 @@ int main() {
         std::cout << "\nselection_linear_mut took " << ms_int.count() << "ms\n";
         std::cout << "kth smallest value where [k = " << k << "]: " << kth_smallest << std::endl;
     }
+
 
     return EXIT_SUCCESS;
 }
