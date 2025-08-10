@@ -3,6 +3,12 @@
 #include <algorithm>
 
 namespace tch {
+    void new_lines(size_t count) {
+        for (size_t i = 0; i < count; i++) {
+            std::cout << std::endl;
+        }
+    }
+
     template <typename>
     struct FnHelper;
 
@@ -42,6 +48,12 @@ namespace tch {
 
         inline static bool compare_end(const interval<Num>& a, const interval<Num>& b) {
             return a.end < b.end;
+        }
+
+        // this just seemed cool imma be honest
+        // returns a lambda that in turn compares the chosen member field of interval<Num>
+        inline static auto compare_member(Num interval<Num>::* member) {
+            return [member](const interval<Num>& a, const interval<Num>& b) { return a.*member < b.*member; };
         }
 
         friend std::ostream& operator<<(std::ostream& os, const interval<Num>& ival) {
@@ -98,7 +110,7 @@ namespace algo {
 
     std::vector<ival> interval_scheduling(std::vector<tch::interval<int>>& v) {
         const size_t N = v.size();
-        std::sort(v.begin(), v.end(), ival::compare_end);
+        std::sort(v.begin(), v.end(), ival::compare_member(&ival::end));
         std::vector<size_t> indices = get_last_intervals(v);
         std::vector<SResult> solutions(N);
 
@@ -115,34 +127,74 @@ namespace algo {
 
         return recover_schedule(v, indices, solutions);
     }
+
+    size_t longest_increasing_subseq(const std::vector<int>& v) {
+        std::vector<size_t> solutions(v.size());
+        size_t largest = 0;
+        solutions[0] = 1;
+
+        for (size_t cur_idx = 1; cur_idx < solutions.size(); cur_idx++) {
+            size_t local_max = 1;
+
+            for (size_t prev_idx = cur_idx - 1; prev_idx >= 0 && prev_idx != std::numeric_limits<size_t>::max(); prev_idx--) {
+                const bool i_is_greater_than = v[cur_idx] >= v[prev_idx];
+                local_max = i_is_greater_than ? std::max(local_max, solutions[prev_idx] + 1) : local_max;
+            }
+
+            solutions[cur_idx] = local_max;
+            largest = std::max(local_max, largest);
+        }
+
+        return largest;
+    }
 }
 
 // Just having a bit of fun here
-// template <typename Struct, typename T>
-// T& project_member(Struct& obj, T Struct::* member) {
-//     return obj.*member;
-// }
+template <typename Struct, typename T>
+T& project_member(Struct& obj, T Struct::* member) {
+    return obj.*member;
+}
 
-// struct Foo {
-//     int a;
-//     char b;
-//     bool t;
-// };
+struct Foo {
+    int a;
+    int b;
+    int c;
+    char d;
+    bool e;
+};
 
 int main() {
+    // algorithm 1: interval scheduling
+    tch::new_lines(2);
     std::vector<algo::ival> v = {{4,6}, {8,11}, {3,5}, {1,5}, {1,2}, {5, 9}, {7,9}, {11, 13}};
+    tch::print_container(v);
+
     std::vector<algo::ival> result = algo::interval_scheduling(v);
-    std::cout << "result: " << result.size() << std::endl;
+    std::cout << "largest non-overlapping interval set size = " << result.size() << std::endl;
     tch::print_container(result);
 
-    // Foo f = {
-    //     10,
-    //     'a',
-    //     true
-    // };
+    // algorithm 2: longest increasing subsequence
+    tch::new_lines(2);
+    std::vector<int> w = {0, -3, -1, 3, 4, -1 };
+    tch::print_container(w);
 
-    // char out = project_member(f, &Foo::b);
-    // std::cout << out << std::endl; // prints out 'a' woahhhh
+    size_t longest = algo::longest_increasing_subseq(w);
+    std::cout << "longest increasing subsequence size = " << longest << std::endl;
+
+    // This stuff below is just for fun
+    tch::new_lines(2);
+    Foo f = {
+        10,
+        45,
+        80,
+        'a',
+        true
+    };
+
+    std::vector<int Foo::*> member_ptrs = { &Foo::a, &Foo::b, &Foo::c };
+    for (int Foo::* ptr : member_ptrs) {
+        std::cout << project_member(f, ptr) << std::endl;
+    }
 
     return EXIT_SUCCESS;
 }
