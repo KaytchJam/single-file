@@ -165,7 +165,7 @@ struct Foo {
 
 int main() {
     // algorithm 1: interval scheduling
-    tch::new_lines(2);
+    //tch::new_lines(2);
     std::vector<algo::ival> v = {{4,6}, {8,11}, {3,5}, {1,5}, {1,2}, {5, 9}, {7,9}, {11, 13}};
     tch::print_container(v);
 
@@ -174,7 +174,7 @@ int main() {
     tch::print_container(result);
 
     // algorithm 2: longest increasing subsequence
-    tch::new_lines(2);
+    tch::new_lines(1);
     std::vector<int> w = {0, -3, -1, 3, 4, -1 };
     tch::print_container(w);
 
@@ -182,7 +182,7 @@ int main() {
     std::cout << "longest increasing subsequence size = " << longest << std::endl;
 
     // This stuff below is just for fun
-    tch::new_lines(2);
+    tch::new_lines(1);
     Foo f = {
         10,
         45,
@@ -191,7 +191,7 @@ int main() {
         true
     };
 
-    std::vector<int Foo::*> member_ptrs = { &Foo::a, &Foo::b, &Foo::c };
+    int Foo::* member_ptrs[] = { &Foo::a, &Foo::b, &Foo::c };
     for (int Foo::* ptr : member_ptrs) {
         std::cout << project_member(f, ptr) << std::endl;
     }
