@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <limits>
 
 namespace tch {
     void new_lines(size_t count) {
@@ -60,6 +61,9 @@ namespace tch {
             return os << "(" << ival.start << "," << ival.end << ")";
         }
     };
+
+    // template <typename A>
+    // concept arithmetic = std::is_arithmetic_v<A>;
 }
 
 namespace algo {
@@ -108,6 +112,7 @@ namespace algo {
         return sched;
     }
 
+    // template <typename Num> requires tch::arithmetic<Num>
     std::vector<ival> interval_scheduling(std::vector<tch::interval<int>>& v) {
         const size_t N = v.size();
         std::sort(v.begin(), v.end(), ival::compare_member(&ival::end));
@@ -146,6 +151,11 @@ namespace algo {
         }
 
         return largest;
+    }
+
+    template <typename Num>
+    size_t subset_sum() {
+        return 0;
     }
 }
 
@@ -191,10 +201,17 @@ int main() {
         true
     };
 
-    int Foo::* member_ptrs[] = { &Foo::a, &Foo::b, &Foo::c };
+    int Foo::* member_ptrs[3] = { &Foo::a, &Foo::b, &Foo::c };
+    tch::Fn<int& (Foo&, int Foo::*)> project_foo = project_member<Foo,int>;
+
     for (int Foo::* ptr : member_ptrs) {
-        std::cout << project_member(f, ptr) << std::endl;
+        std::cout << project_foo(f, ptr) << std::endl;
     }
+
+    auto lam = [&f](int a) {
+        std::cout << a * f.a << std::endl;
+        return f.a;
+    };
 
     return EXIT_SUCCESS;
 }
