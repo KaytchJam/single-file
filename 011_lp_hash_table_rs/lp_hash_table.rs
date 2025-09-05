@@ -70,7 +70,7 @@ impl<const S: usize, K: Hash + Eq, V> OpenHashTable<S,K,V> {
 
 fn main() {
     println!("Hello world");
-    let mut oht = OpenHashTable::<10,char,u32>::new();
+    let mut oht: OpenHashTable<10,char,u32> = OpenHashTable::new();
 
     let mut index: u32 = 0;
     while !oht.is_empty() {
