@@ -2,7 +2,10 @@ use std::hash::Hash;
 use std::hash::Hasher;
 use std::hash::DefaultHasher;
 
-/** Super simple constant size Linear Probing Hash Table */
+/** 
+ * Super simple constant size Linear Probing Hash Table. Couple of things I don't
+ * account for like duplicate entries and whatnot.
+ */
 
 #[derive(Debug)]
 struct OpenHashTable<const S: usize, K, V> {
@@ -36,20 +39,27 @@ impl<const S: usize, K: Hash + Eq, V> OpenHashTable<S,K,V> {
         return index;
     }
 
+    /** Returns whether all addresses in this Hash Table
+     * are occupied or not */
     pub fn is_empty(&self) -> bool {
         return self.capacity == 0;
     }
 
-    pub fn insert(&mut self, key: K, value: V) {
+    /** Insert a key value pair into the hash table. Returns
+     * true if the insert was successful, and false if it
+     * was not. */
+    pub fn insert(&mut self, key: K, value: V) -> bool {
         if self.is_empty() {
-            return;
+            return false;
         }
 
         let index: usize = self.find_open_index(Self::find_hash(&key) % S);
         self.buffer[index] = Some((key, value));
         self.capacity -= 1;
+        return true;
     }
 
+    /** Get a reference to the value associated with key in this hash table */
     pub fn get(&self, key: &K) -> Option<&V> {
         let mut index: usize = Self::find_hash(&key) % S;
         let mut count: usize = 0;
