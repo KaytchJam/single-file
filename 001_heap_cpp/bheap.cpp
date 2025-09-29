@@ -1,7 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <stack>
-#include <limits>
 
 enum HeapExtrema {
 	HE_MAX,

@@ -3,7 +3,6 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include <string>
 #include <limits>
 
 /** Igneous rock Enum */
@@ -14,7 +13,7 @@ enum IGNEOUS_ROCK {
     ULTRAMAFIC = 3
 };
 
-/** Pass in an Igneous Rock enum and return its string representation */
+/** Pass in an Igneous Rock enum and return its string representation. */
 const char* ig2str(IGNEOUS_ROCK rock) {
     switch (rock) {
         case FELSIC: return "felsic";
@@ -36,7 +35,8 @@ struct interval {
 };
 
 /** Pass in an igneous rock and return the silica content range of the rock 
- * as an interval. */
+ * as an interval. The assumption is that the distribution of silica content
+ * for each mineral along the interval is uniform. */
 interval ig2interval(IGNEOUS_ROCK rock) {
     switch (rock) {
         case FELSIC: return {66.0, 76.0};

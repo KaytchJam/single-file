@@ -28,7 +28,7 @@ std::vector<T> print_vec(std::vector<T>&& V) {
 	typename std::vector<T>::iterator it = V.begin();
 	std::cout << "[";
 	if (it != V.end()) {	std::cout << (*it);	it++;	}
-	for (it; it != V.end(); it++) {
+	for (; it != V.end(); it++) {
 		std::cout << ", " << (*it);
 	}
 	std::cout << "]" << std::endl;
