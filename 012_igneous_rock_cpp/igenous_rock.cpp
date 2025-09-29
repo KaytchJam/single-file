@@ -6,6 +6,7 @@
 #include <string>
 #include <limits>
 
+/** Igneous rock Enum */
 enum IGNEOUS_ROCK {
     FELSIC = 0,
     INTERMEDIATE = 1,
@@ -13,6 +14,7 @@ enum IGNEOUS_ROCK {
     ULTRAMAFIC = 3
 };
 
+/** Pass in an Igneous Rock enum and return its string representation */
 const char* ig2str(IGNEOUS_ROCK rock) {
     switch (rock) {
         case FELSIC: return "felsic";
@@ -23,6 +25,7 @@ const char* ig2str(IGNEOUS_ROCK rock) {
     }
 }
 
+/** Simple interval representation. */
 struct interval {
   double low;
   double high;
@@ -32,6 +35,8 @@ struct interval {
   }
 };
 
+/** Pass in an igneous rock and return the silica content range of the rock 
+ * as an interval. */
 interval ig2interval(IGNEOUS_ROCK rock) {
     switch (rock) {
         case FELSIC: return {66.0, 76.0};
@@ -42,10 +47,13 @@ interval ig2interval(IGNEOUS_ROCK rock) {
     }
 }
 
+/** Pass in a silica content percentage and return the igenous rock that said
+ * percentage is closest to. */
 const char* silica_rock_thresh(float silica_percent_content) {
     const IGNEOUS_ROCK types[4] = {FELSIC, INTERMEDIATE, MAFIC, ULTRAMAFIC };
     double means[4] = {};
     
+    // get means of all intervals
     for (int i = 0; i < 4; i++) {
         means[i] = ig2interval(types[i]).mean();
     }
@@ -53,6 +61,7 @@ const char* silica_rock_thresh(float silica_percent_content) {
     double dist = std::numeric_limits<double>::max();
     int closest = -1;
     
+    // which mean is our percentage "closest" to
     for (int i = 0; i < 4; i++) {
         double dist_local = abs(means[i] - silica_percent_content);
         if (dist_local < dist) {
