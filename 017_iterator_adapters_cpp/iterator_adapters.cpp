@@ -46,7 +46,7 @@ struct ScuffedRange {
  * of the two ends */
 template <typename R1, typename R2>
 struct Zip : ScuffedRange<Zip<R1,R2>> {
-private:
+    private:
     R1& L;
     R2& R;
     
@@ -256,7 +256,7 @@ private:
     uint32_t window_size; // size of the window
     Slice view; // non-owning view of the input data
     
-public:
+    public:
     Window1D(const uint32_t size, Ptr<int32_t> data, uint32_t data_size) 
         : window_size(size), view({ data, 0, data_size }) {
         assert(size < data_size);
@@ -314,10 +314,22 @@ public:
     }
 };
 
-int main() {
-    const uint32_t length = 10;
-    const uint32_t window_size = 3;
+/** please put in a number :( */
+void get_input_params(uint32_t& length, uint32_t& window_size) {
+    std::cout << "Enter the size of the Buffer: ";
+    std::cin >> length;
     
+    std::cout << "Enter an (Even) Window Size #: ";
+    std::cin >> window_size;
+}
+
+int main() {
+    uint32_t length;
+    uint32_t window_size;
+
+    std::cout << "=========================" << std::endl;
+    get_input_params(length, window_size);
+
     // internal buffers
     const Unique<int32_t[]> arr = Unique<int32_t[]>(new int32_t[length]);
     const Unique<int32_t[]> out = Unique<int32_t[]>(new int32_t[length]);
@@ -341,6 +353,7 @@ int main() {
         c.second[c.second.size / 2] = c.first.sum();
     }
     
+    std::cout << "=========================" << std::endl;
     print_slice(slice_arr); // before
     print_slice(slice_out); // result
 }
