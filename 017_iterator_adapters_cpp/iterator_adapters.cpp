@@ -258,22 +258,22 @@ struct Window1D : ScuffedRange<Window1D> {
     
     public:
     Window1D(const uint32_t size, Ptr<int32_t> data, uint32_t data_size) 
-    : window_size(size), view({ data, 0, data_size }) {
+        : window_size(size), view({ data, 0, data_size }) {
         assert(size < data_size);
     }
 
     /** Iterator returning slices to the underlying view (which is also a slice) */
     struct Window1DIterator {
-        private:
+    private:
         Slice m_view;
         Slice m_window;
         static void shift_in_place(Slice& s, int amount) { s.start += amount; }
     public:
 
     Window1DIterator(const Slice& view, uint32_t start, uint32_t size) 
-            : m_view(view), m_window({view.data, start, size}) {}
+        : m_view(view), m_window({view.data, start, size}) {}
 
-            using value_type = Slice;
+        using value_type = Slice;
         using reference_type = value_type;
         using pointer_type = void;
         using iterator_category = std::input_iterator_tag;
@@ -310,7 +310,6 @@ struct Window1D : ScuffedRange<Window1D> {
     }
     
     Window1D::iterator end() const {
-        std::cout << "view size = " << view.size << ", window_size = " << window_size << std::endl; 
         return Window1DIterator(view, view.size - window_size + 1, window_size);
     }
 };
@@ -332,17 +331,16 @@ int main() {
     }
 
     std::memset(out.get(), 0, sizeof(int32_t) * length);
-    print_slice(slice_arr);
-
+    
     // create sliding window objects for both
     Window1D win = Window1D(window_size, arr.get(), length);
     Window1D out_win = Window1D(window_size, out.get(), length);
-
+    
     // zip em up, sum of all items in window 1 goes to out window
     for (std::pair<Slice,Slice> c : win.zip(out_win)) {
         c.second[c.second.size / 2] = c.first.sum();
     }
-
-    print_slice(slice_out);
-    std::cout << "END" << std::endl;
+    
+    print_slice(slice_arr); // before
+    print_slice(slice_out); // result
 }
