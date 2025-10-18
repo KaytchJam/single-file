@@ -46,7 +46,7 @@ struct ScuffedRange {
  * of the two ends */
 template <typename R1, typename R2>
 struct Zip : ScuffedRange<Zip<R1,R2>> {
-    private:
+private:
     R1& L;
     R2& R;
     
@@ -256,7 +256,7 @@ private:
     uint32_t window_size; // size of the window
     Slice view; // non-owning view of the input data
     
-    public:
+public:
     Window1D(const uint32_t size, Ptr<int32_t> data, uint32_t data_size) 
         : window_size(size), view({ data, 0, data_size }) {
         assert(size < data_size);
