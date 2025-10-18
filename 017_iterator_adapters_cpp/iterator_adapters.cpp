@@ -17,9 +17,9 @@ struct Zip;
 template <typename R1>
 struct Enumerate;
 
-/** base 'trait' class for all of my ScuffedRanges. Doesn't do any
- * actual SFINAE based validation checking on whether a Derived
- * type should be allowed to call one of these functions so... */
+/** base 'trait' class for all of my ScuffedRanges. Doesn't check
+ * where the Derived class should be able to call certain functions
+ * (like sum()), so... */
 template <typename Derived>
 struct ScuffedRange {
 
@@ -330,7 +330,7 @@ int main() {
         iv.second = iv.first;
     }
 
-    std::memset(out.get(), 0, sizeof(int32_t) * length);
+    std::memset(out.get(), 0, sizeof(int32_t) * length); // fill out buffer with zeroes
     
     // create sliding window objects for both
     Window1D win = Window1D(window_size, arr.get(), length);
