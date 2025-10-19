@@ -59,14 +59,14 @@ public:
         I2 r_iter;
 
         using value_type = std::pair<typename I1::value_type, typename I2::value_type>;
-        using reference_type = std::pair<typename I1::reference_type, typename I2::reference_type>;
-        using pointer_type = void;
+        using reference = std::pair<typename I1::reference, typename I2::reference>;
+        using pointer = void;
         using iterator_category = std::input_iterator_tag;
 
         ZipIterator(I1 l, I2 r) : l_iter(std::move(l)), r_iter(std::move(r)) {}
         
-        reference_type operator*() {
-            return reference_type(*l_iter, *r_iter);
+        reference operator*() {
+            return reference(*l_iter, *r_iter);
         }
 
         ZipIterator& operator++() {
@@ -114,14 +114,14 @@ public:
         I iter;
 
         using value_type = std::pair<uint32_t, typename I::value_type>;
-        using reference_type = std::pair<uint32_t, typename I::reference_type>;
-        using pointer_type = void;
+        using reference = std::pair<uint32_t, typename I::reference>;
+        using pointer = void;
         using iterator_category = std::input_iterator_tag;
 
         EnumerateIterator(I p_iter) : iter(p_iter), index(0) {}
 
-        reference_type operator*() {
-            return reference_type(index, *iter);
+        reference operator*() {
+            return reference(index, *iter);
         }
 
         EnumerateIterator& operator++() {
@@ -171,20 +171,20 @@ struct SliceIterator {
     uint32_t m_at;
 
     using value_type = int32_t;
-    using reference_type = value_type&;
-    using pointer_type = value_type*;
+    using reference = value_type&;
+    using pointer = value_type*;
     using difference_type = std::ptrdiff_t;
     using iterator_category = std::input_iterator_tag;
 
-    reference_type operator*() {
+    reference operator*() {
         return m_data[m_at];
     }
     
-    const reference_type operator*() const {
+    const reference operator*() const {
         return m_data[m_at];
     }
     
-    pointer_type operator->() {
+    pointer operator->() {
         return &m_data[m_at];
     }
 
@@ -274,8 +274,8 @@ public:
         : m_view(view), m_window({view.data, start, size}) {}
 
         using value_type = Slice;
-        using reference_type = value_type;
-        using pointer_type = void;
+        using reference = value_type;
+        using pointer = void;
         using iterator_category = std::input_iterator_tag;
         using difference_type = int;
 
