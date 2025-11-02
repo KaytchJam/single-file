@@ -5,6 +5,8 @@
 #include <iostream>
 #include <cassert>
 #include <cstring>
+#include <vector>
+#include <cctype>
 
 // aliases that I like
 
@@ -16,6 +18,9 @@ struct Zip;
 
 template <typename R1>
 struct Enumerate;
+
+template <typename F, typename R1>
+struct Map;
 
 /** base 'trait' class for all of my ScuffedRanges. Doesn't check
  * where the Derived class should be able to call certain functions
@@ -39,6 +44,11 @@ struct ScuffedRange {
 
     Enumerate<Derived> enumerate() {
         return Enumerate<Derived>(static_cast<Derived&>(*this));
+    }
+
+    template <typename F>
+    Map<F, Derived> map(F func) {
+        return Map<F, Derived>();
     }
 };
 
@@ -156,15 +166,66 @@ public:
     }
 };
 
+template <typename M, typename T>
+struct MapResultT {
+    using Type = decltype(std::declval<M>()(std::declval<T>()));
+};
+
+template <typename M, typename T>
+using MapResult = typename MapResultT<M,T>::Type;
+
 /** Maybe another day */
-// template <typename F, typename R1>
-// struct Map {
-    // private:
-//     F function;
-//     R1 L;
-// public:
-//     Map(const R1& l, F func) : function(func), L(l) {}
-// };
+template <typename F, typename R1>
+struct Map {
+    private:
+    F function;
+    R1& L;
+public:
+    Map(R1& l, F func) : function(func), L(l) {}
+
+    template <typename I>
+    struct MapIterator {
+        F func;
+        I inner;
+
+        using value_type = MapResult<F, typename I::value_type>;
+        using reference = value_type;
+        using pointer = void;
+
+        value_type operator*() const {
+            return func(*inner);
+        }
+
+        MapIterator& operator++() {
+            ++inner;
+            return *this;
+        }
+
+        MapIterator operator++(int) {
+            MapIterator prev = *this;
+            ++(*this);
+            return prev;
+        }
+
+        bool operator==(const MapIterator& other) const {
+            return inner == other.inner && func == other.func;
+        }
+
+        bool operator!=(const MapIterator& other) {
+            return !(*this == other);
+        }
+    };
+
+    using iterator = MapIterator<typename R1::iterator>;
+
+    iterator begin() const {
+        return iterator{ function, L.begin() };
+    }
+
+    iterator end() const {
+        return iterator{ function, L.end() };
+    }
+};
 
 struct SliceIterator {
     const Ptr<int32_t> m_data;
@@ -224,6 +285,37 @@ struct Slice : public ScuffedRange<Slice> {
     }
 
     bool operator==(const Slice& other) const {
+        return data == other.data && start == other.start && size == other.size;
+    }
+
+    using iterator = SliceIterator;
+
+    iterator begin() const {
+        return SliceIterator{ data, start };
+    }
+    
+    iterator end() const {
+        return SliceIterator{ data, start + size };
+    }
+};
+
+template <typename T>
+struct GSlice : public ScuffedRange<GSlice<T>> {
+    const Ptr<T> data;
+    uint32_t start; uint32_t size;
+
+    GSlice(const Ptr<T> data, uint32_t start, uint32_t size)
+        : data(data), start(start), size(size) {}
+    
+    T& operator[](uint32_t i) {
+        return data[i + start];
+    }
+    
+    const T& operator[](uint32_t i) const {
+        return data[i + start];
+    }
+
+    bool operator==(const GSlice& other) const {
         return data == other.data && start == other.start && size == other.size;
     }
 
@@ -312,6 +404,15 @@ public:
     Window1D::iterator end() const {
         return Window1DIterator(view, view.size - window_size + 1, window_size);
     }
+};
+
+template <typename T>
+struct StdVectorWrapper : ScuffedRange<StdVectorWrapper<T>> {
+    std::vector<T>& v;
+    StdVectorWrapper(std::vector<T>& v) : v(v) {}
+    using iterator = typename std::vector<T>::iterator;
+    iterator begin() const { return v.begin(); }
+    iterator end() const { return v.end(); }
 };
 
 /** please put in a number :( */
