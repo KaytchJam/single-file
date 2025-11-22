@@ -58,6 +58,8 @@ int main() {
     std::vector<float> v = {10.f, 5.f, 15.f, 20.f, 13.f};
     WindowedLerp<20> cv;
     
+    // the result? a continous or "smooth" interpolation function
+    // defined for all x
     const float dt = 0.5f;
     float x = 0.f;
     while (x <= v.size()) {
