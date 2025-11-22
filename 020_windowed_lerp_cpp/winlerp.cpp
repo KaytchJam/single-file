@@ -29,7 +29,7 @@ class WindowedLerp {
     std::array<float, PARTS + 1> nrange;
 public:
     WindowedLerp() : nrange{} {
-        const float high = 0.f;
+        const float high = 1.f;
         const float low = -1.f;
         
         const float fparts = static_cast<float>(PARTS);
