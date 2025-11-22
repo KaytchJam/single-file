@@ -27,7 +27,7 @@ public:
         const float high = 1.f;
         const float low = -1.f;
         
-        const float fparts = static_cast<float>(PARTS);
+        const float fparts = (float) PARTS;
         for (int i = 0; i <= PARTS; i++) {
             float part = (i / fparts) * (high - low) + low;
             this->nrange[i] = part;
