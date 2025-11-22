@@ -59,7 +59,8 @@ int main() {
     WindowedLerp<20> cv;
     
     // the result? a continuous or "smooth" interpolation function
-    // defined for all x
+    // defined for all x. outside of the interval { 0 <= i <= v.size() },
+    // cv(i) = v[0] if i < 0 and v[v.size() - 1] if i > v.size() - 1.
     const float dt = 0.5f;
     float x = 0.f;
     while (x <= v.size()) {
