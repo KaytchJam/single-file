@@ -3,19 +3,14 @@
 #include <cmath>
 #include <array>
 
-/**
- * index-aware linear interpolation. takes in a float x,
- * and returns the linear interpolation between the value
- * in std::vector<float> v at index floor(x) and index
- * floor(x) + 1.
- */
-float llerp(const std::vector<float>& v, const float x) {
+/** index based lerp */
+float index_lerp(const std::vector<float>& v, const float x) {
     const float alpha = std::floor(x) + 1.f - x;
     const int index = (int) floor(x);
     return alpha * v[index] + (1.f - alpha) * v[std::min((int) v.size() - 1, index + 1)];
 }
 
-/** clamp some float x between the inclusive range "low" and "high" */
+/** clamp x between low and high */
 float clamp(float low, float x, float high) {
     return std::max(low, std::min(high, x));
 }
@@ -47,7 +42,7 @@ public:
         float acc = 0.f;
         
         for (float part : this->nrange) {
-            acc += llerp(v, clamp(0.f, x + part, N));
+            acc += index_lerp(v, clamp(0.f, x + part, N));
         }
         
         return coef * acc;
