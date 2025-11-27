@@ -83,7 +83,9 @@ int main() {
     Polynomial<2> g({2, 5, 1});
     Polynomial<3> h = f + g;
 
-    const float x = 3;
+    float x;
+    std::cin >> x;
+
     const float f_result = f(x);
     const float g_result = g(x);
     const float h_result = h(x);
