@@ -81,16 +81,16 @@ public:
 int main() {
     Polynomial<3> f({3, 2, 1, 5});
     Polynomial<2> g({2, 5, 1});
-    Polynomial<3> fg = f + g;
+    Polynomial<3> h = f + g;
 
     const float f_result = f(3);
     const float g_result = g(3);
-    const float fg_result = fg(3);
+    const float h_result = h(3);
 
-    std::cout << "f(3) result = " << f_result << std::endl;
-    std::cout << "g(3) result = " << g_result << std::endl;
-    std::cout << "fg(3) result = " << fg_result << std::endl;
-    std::cout << "f(3) + g(3) result = " << f_result + g_result << std::endl;
+    std::cout << "f(3) = " << f_result << std::endl;
+    std::cout << "g(3) = " << g_result << std::endl;
+    std::cout << "h(3) = " << h_result << std::endl;
+    std::cout << "f(3) + g(3) = " << f_result + g_result << std::endl;
     
     return 0;
 }
