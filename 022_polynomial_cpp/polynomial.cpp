@@ -83,14 +83,15 @@ int main() {
     Polynomial<2> g({2, 5, 1});
     Polynomial<3> h = f + g;
 
-    const float f_result = f(3);
-    const float g_result = g(3);
-    const float h_result = h(3);
+    const float x = 3;
+    const float f_result = f(x);
+    const float g_result = g(x);
+    const float h_result = h(x);
 
-    std::cout << "f(3) = " << f_result << std::endl;
-    std::cout << "g(3) = " << g_result << std::endl;
-    std::cout << "h(3) = " << h_result << std::endl;
-    std::cout << "f(3) + g(3) = " << f_result + g_result << std::endl;
+    std::cout << "f(" << x << ") = " << f_result << std::endl;
+    std::cout << "g(" << x << ") = " << g_result << std::endl;
+    std::cout << "h(" << x << ") = " << h_result << std::endl;
+    std::cout << "f(" << x << ") + g(" << x << ") = " << f_result + g_result << std::endl;
     
     return 0;
 }
