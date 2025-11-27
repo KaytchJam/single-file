@@ -17,7 +17,6 @@ private:
 
 public:
     Polynomial(const std::array<float, Degree + 1>& coef) : coefficients(coef) {}
-    Polynomial(std::array<float, Degree + 1>&& coef) : coefficients(coef) {}
     
     /** Return the coefficient `c` corresponding to size_t `degree`.
      * 
@@ -75,7 +74,7 @@ public:
             coefs[MaxDegree - i] = coef_at_degree(i) + other.coef_at_degree(i);
         }
         
-        return Polynomial<MaxDegree>(std::move(coefs));
+        return Polynomial<MaxDegree>(coefs);
     }
 };
 
