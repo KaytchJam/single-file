@@ -84,6 +84,7 @@ int main() {
     Polynomial<3> h = f + g;
 
     float x;
+    std::cout << "Type in some real-valued number: ";
     std::cin >> x;
 
     const float f_result = f(x);
