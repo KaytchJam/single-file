@@ -1,5 +1,6 @@
 #include <iostream>
 #include <array>
+#include <sstream>
 
 template <size_t Degree>
 class Polynomial {
@@ -41,10 +42,9 @@ public:
     /** Compute the polynomial at 'x' */
     float operator()(float x) const {
         float acc = 0.f;
-        for (int i = 0; i < Degree + 1; i++) {
-            acc += coefficients[i] * pow_local(x, Degree - i);
+        for (size_t i = 0; i <= Degree; i++) {
+            acc = acc * x + coefficients[i];
         }
-        
         return acc;
     }
     
@@ -56,25 +56,46 @@ public:
             degree -= 1;
         }
     }
+
+    std::array<float, Degree + 1>& coefs() {
+        return coefficients;
+    }
     
     /** Sum two Polynomials together. The resulting Polynomial's degree is the maximum of the two. */
     template <size_t OtherDegree>
     Polynomial<(Degree > OtherDegree ? Degree : OtherDegree)> operator+(const Polynomial<OtherDegree>& other) {
         constexpr size_t MaxDegree = (Degree > OtherDegree ? Degree : OtherDegree);
-        constexpr size_t MinDegree = (Degree < OtherDegree ? Degree : OtherDegree);
-        
         std::array<float, MaxDegree + 1> coefs{};
-        const Polynomial<MaxDegree>* ref = (MaxDegree == Degree) ? (Polynomial<MaxDegree>*) this : (Polynomial<MaxDegree>*) &other;
 
-        for (int i = (int) MaxDegree; i > MinDegree; i -= 1) {
-            coefs[MaxDegree - i] = ref->coef_at_degree(i);
-        }
-        
-        for (int i = (int) MinDegree; i >= 0; i -= 1) {
-            coefs[MaxDegree - i] = coef_at_degree(i) + other.coef_at_degree(i);
+        for (size_t i = 0; i <= MaxDegree; i++) {
+            float a = (i <= Degree) ? coef_at_degree(i) : 0.f;
+            float b = (i <= OtherDegree) ? other.coef_at_degree(i) : 0.f;
+            coefs[MaxDegree - i] = a + b;
         }
         
         return Polynomial<MaxDegree>(coefs);
+    }
+
+    std::string to_string() const {
+        std::stringstream ss;
+        for (size_t i = 0; i < Degree + 1; i++) {
+            ss << coefficients[i];
+            if ((Degree - i) != 0) {
+                ss << "x^" << (Degree - i) << " + ";
+            }
+        }
+        return ss.str();
+    }
+
+    std::string to_string(const float v) const {
+        std::stringstream ss;
+        for (size_t i = 0; i < Degree + 1; i++) {
+            ss << coefficients[i];
+            if ((Degree - i) != 0) {
+                ss << "(" << v << ")^" << (Degree - i) << " + ";
+            }
+        }
+        return ss.str();
     }
 };
 
@@ -91,10 +112,10 @@ int main() {
     const float g_result = g(x);
     const float h_result = h(x);
 
-    std::cout << "f(" << x << ") = " << f_result << std::endl;
-    std::cout << "g(" << x << ") = " << g_result << std::endl;
-    std::cout << "h(" << x << ") = " << h_result << std::endl;
-    std::cout << "f(" << x << ") + g(" << x << ") = " << f_result + g_result << std::endl;
+    std::cout << "f(" << x << "): " << f.to_string(x) << " = " << f_result << std::endl;
+    std::cout << "g(" << x << "): " << g.to_string(x) << " = " << g_result << std::endl;
+    std::cout << "h(" << x << "): " << h.to_string(x) << " = " << h_result << std::endl;
+    std::cout << "f(" << x << ") + g(" << x << "): " << (f + g).to_string(x) << " = " << f_result + g_result << std::endl;
     
     return 0;
 }
