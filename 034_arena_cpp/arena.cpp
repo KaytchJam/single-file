@@ -91,17 +91,37 @@ T* alloc(BumpArena& arena, T&& t) {
     return ptr;
 }
 
-enum class NodeType : uint8_t {
-    Dummy,
-    Data
+// Fixed Size Case
+template <typename T, std::size_t S = 0>
+struct ArrHelper {
+    using type = T[S];
 };
+
+// Unsized Case
+template <typename T>
+struct ArrHelper<T, 0> {
+    using type = T[];
+};
+
+// Unified Case
+template <typename T, std::size_t S = 0>
+using Arr = typename ArrHelper<T,S>::type;
+
+template <typename T>
+using Ptr = T*;
 
 template <typename T>
 struct Node {
     T item;
-    Node* left;
-    Node* right;
+    union {
+        struct {
+            Node* left;
+            Node* right;
+        };
+        Node* children[2];
+    };
 };
+
 
 /** T is assumed to be ordinal */
 template <typename T, typename Allocator = std::pmr::polymorphic_allocator<T>>
@@ -134,39 +154,19 @@ struct BinaryTree {
                 cur = val >= cur->item ? cur->right : cur->left;
             }
 
-            if (val >= parent->item) {
-                parent->right = create_node(std::move(val));
-            } else {
-                parent->left = create_node(std::move(val));
-            }
-
+            parent->children[val >= parent->item] = create_node(std::move(val));
             return *this;
         }
 
         bool contains(const T& val) {
             Node<T>* cur = root;
             while (cur != nullptr && cur->item != val) {
-                cur = val >= cur->item ? cur->right : cur->left;
+                cur = cur->children[val >= cur->item];
             }
             return cur != nullptr;
         }
 };
 
-// Fixed Size Case
-template <typename T, std::size_t S = 0>
-struct ArrHelper {
-    using type = T[S];
-};
-
-// Unsized Case
-template <typename T>
-struct ArrHelper<T, 0> {
-    using type = T[];
-};
-
-// Unified Case
-template <typename T, std::size_t S = 0>
-using Arr = typename ArrHelper<T,S>::type;
 
 int main() {
     const u64 NUM_BYTES = 4192;
