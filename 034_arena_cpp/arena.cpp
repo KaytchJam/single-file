@@ -122,7 +122,6 @@ struct Node {
     };
 };
 
-
 /** T is assumed to be ordinal */
 template <typename T, typename Allocator = std::pmr::polymorphic_allocator<T>>
 struct BinaryTree {
@@ -151,7 +150,7 @@ struct BinaryTree {
             Node<T>* parent = nullptr;
             while (cur != nullptr) {
                 parent = cur;
-                cur = val >= cur->item ? cur->right : cur->left;
+                cur = cur->children[val >= cur->item];
             }
 
             parent->children[val >= parent->item] = create_node(std::move(val));
