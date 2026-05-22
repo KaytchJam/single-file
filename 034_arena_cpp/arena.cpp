@@ -91,17 +91,11 @@ T* alloc(BumpArena& arena, T&& t) {
     return ptr;
 }
 
-// Fixed Size Case
-template <typename T, std::size_t S = 0>
-struct ArrHelper {
-    using type = T[S];
-};
-
-// Unsized Case
 template <typename T>
-struct ArrHelper<T, 0> {
-    using type = T[];
-};
+T* alloc(BumpArena& arena) {
+    T* ptr = reinterpret_cast<T*>(arena.allocate(sizeof(T), alignof(T)));
+    return ptr;
+}
 
 // Unified Case
 template <typename T, std::size_t S = 0>
