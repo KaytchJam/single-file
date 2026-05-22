@@ -164,7 +164,7 @@ struct ArrHelper<T, 0> {
     using type = T[];
 };
 
-// 3. The single, unified public alias
+// Unified Case
 template <typename T, std::size_t S = 0>
 using Arr = typename ArrHelper<T,S>::type;
 
