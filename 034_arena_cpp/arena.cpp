@@ -143,6 +143,9 @@ struct BinaryTree {
             return node;
         }
     public:
+        using value_type = T;
+        using node_type = Node<T>;
+    
         BinaryTree(const Allocator& alloc = Allocator()) : allocator(alloc) {}
 
         BinaryTree& add(T&& val) {
@@ -162,6 +165,8 @@ struct BinaryTree {
             parent->children[val >= parent->item] = create_node(std::move(val));
             return *this;
         }
+        
+        inline Node<T>* get_root() { return root; }
 
         bool contains(const T& val) {
             Node<T>* cur = root;
@@ -172,6 +177,78 @@ struct BinaryTree {
         }
 };
 
+template <typename BinaryTreeType>
+struct BinaryTreeTraits {
+    static_assert(sizeof(BinaryTreeType) == 0, "Specialize BinaryTreeTraits for your tree type");
+};
+
+template <typename T, typename Alloc>
+struct BinaryTreeTraits<BinaryTree<T, Alloc>> {
+    using value_type = typename BinaryTree<T, Alloc>::value_type;
+    using node_type = typename BinaryTree<T, Alloc>::node_type;
+
+    inline static value_type& value(BinaryTree<T, Alloc>& tree, node_type& n) { return n.item; }
+    inline static node_type* get_root(BinaryTree<T, Alloc>& tree) { return tree.get_root(); }
+    inline static node_type* left(BinaryTree<T, Alloc>& tree, node_type& n) { return n.left; }
+    inline static node_type* right(BinaryTree<T, Alloc>& tree, node_type& n) { return n.right; }
+};
+
+template <typename NodeType>
+using VisitNode = std::pair<NodeType*,bool>;
+
+template <typename TreeType>
+using DefaultScratch = std::allocator<VisitNode<typename BinaryTreeTraits<TreeType>::node_type>>;
+
+/** Non-owning tree traversal struct. Requires BinaryTreeTraits to be defined for input
+ * type TreeType. A scratch allocator may also be passed in. */
+template <typename TreeType, typename Scratch = DefaultScratch<TreeType>>
+struct InOrderTraversal {
+    using node_type = typename BinaryTreeTraits<TreeType>::node_type;
+    using value_type = typename BinaryTreeTraits<TreeType>::value_type;
+    using BTT = BinaryTreeTraits<TreeType>;
+
+    TreeType& tree;
+    std::vector<VisitNode<node_type>, Scratch> stack;
+    
+    InOrderTraversal(TreeType& tree, const Scratch& alloc = Scratch()) 
+        : tree(tree), stack(alloc) {
+        node_type* root = BTT::get_root(tree);
+        if (root) {
+            stack.push_back({ root, false });
+        }
+    }
+    
+    /** Advance to the next node in the BinaryTree of TreeType */
+    const value_type& next() {
+        VisitNode<node_type>& vn = stack.back();
+        node_type* out = vn.first;
+        
+        if (!vn.second) {
+            vn.second = true;
+            while (node_type* left = BTT::left(tree, *out)) {
+                stack.push_back({ left, true });
+                out = left;
+            }
+        }
+        
+        stack.pop_back();
+        node_type* right = BTT::right(tree, *out);
+        if (right) {
+            stack.push_back({ right, false });
+        }
+        
+        return BTT::value(tree, *out);
+    }
+    
+    /** Check if the traversal can be continued. Returns true if `next` can be safely called,
+     * and `false` if not. */
+    bool has_next() const {
+        return stack.size() > 0;
+    }
+};
+
+template <typename TreeType, typename Scratch = std::pmr::polymorphic_allocator<VisitNode<typename BinaryTreeTraits<TreeType>::node_type>>>
+InOrderTraversal(TreeType&, const Scratch&) -> InOrderTraversal<TreeType,Scratch>;
 
 int main() {
     const u64 NUM_BYTES = 4192;
@@ -204,13 +281,23 @@ int main() {
 
     BumpArenaAllocator<Node<i32>> node_allocator(&arena);
     BinaryTree<i32, BumpArenaAllocator<Node<i32>>> tree(node_allocator);
-    Arr<i32> items = {10, 5, 15, 11, 18};
+    Arr<i32> items = {56, 32, 62, 44, 88, 58, 28};
     for (i32 i : items) {
         tree.add(std::move(i));
     }
 
-    for (i32 i : {5, 10, 11, 15, 18, 20, 22, -1, 8}) {
+    for (i32 i : {5, 10, 11, 15, 18, 20, 22, 32, -1, 8}) {
         std::cout << "i = " << i << " is " << (tree.contains(i) ? "" : "NOT ") << "present in the tree" << std::endl;
+    }
+    
+    std::printf("\nTree Traversal: \n");
+
+    i32 j = 1;
+    InOrderTraversal traverse(tree);
+    while (traverse.has_next()) {
+        const i32 val = traverse.next();
+        std::printf("#%d - %d\n", j, val);
+        j += 1;
     }
 
     return 0;
