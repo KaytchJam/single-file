@@ -8,6 +8,9 @@ constexpr int PAGE_SIZE = 4;
 constexpr int NUM_HARDWARE_PAGES = 4;
 constexpr int PROCESS_SIZE = 8; // INDICES 
 
+// SWAP SPACE SIZE
+// DISK SIZE
+
 // MASKS
 constexpr int VPN_MASK = 0x4;
 constexpr int OFFSET_MASK = 0x3;
@@ -41,6 +44,7 @@ struct process {
 
     int get_real_index(const int virtual_idx);
     char read(const int virtual_idx);
+    void read_into(const int virtual_idx, const int num_bytes, char* destination);
     void write(const int virtual_idx, const char data);
     void write_from(const int virtual_idx, const char* data);
 };
@@ -182,6 +186,10 @@ struct kernel {
         processes[process_id].write_from(virtual_start_index, data);
     }
 
+    void read_into(const int process_id, const int virtual_start_index, const int num_bytes, char* dest) {
+        processes[process_id].read_into(virtual_start_index, num_bytes, dest);
+    }
+
     /** Zero out all indices in "memory" */
     void clear_memory() {
         for (char &address : memory) {
@@ -217,6 +225,13 @@ int process::get_real_index(const int virtual_idx) {
 char process::read(const int virtual_idx) {
     const int real_idx = get_real_index(virtual_idx);
     return memory[real_idx];
+}
+
+void process::read_into(const int virtual_idx, const int num_bytes, char* dest) {
+    for (int i = 0; i < num_bytes; i++) {
+        const int real_idx = get_real_index(virtual_idx + i);
+        dest[i] = memory[real_idx];
+    }
 }
     
 /** Write to "memory" given a virtual index and a byte of data */
@@ -311,10 +326,10 @@ int main() {
     print_diagnostics();
 
     std::cout << "\n---\nPRINTING OUT THE MEMORY IN PROCESS '0'" << std::endl;
-    for (int i = 0; i < PROCESS_SIZE; i++) {
-        const char byte = mother.processes[0].read(i);
-        std::cout << "P0: " << byte << std::endl;
-    }
+    char buff[9];
+    buff[8] = '\0';
+    mother.read_into(0, 0, 8, buff);
+    std::cout << buff << std::endl;
     std::cout << "DONE.\n---\n" << std::endl;
 
     print_diagnostics();
