@@ -219,7 +219,8 @@ namespace LP {
             /** Solves the linear programming problem for the set of free variables that maximize
              * the objective function. The first n - 1 indices correspond to the free variables,
              * and the nth index corresponds to the 'cost'. */
-            Matrix&& maximize() {
+            Matrix maximize() {
+                const size_t last = _solution._cols - 1;
                 int32_t pivot = find_pivot_column(this->_tableau);
                 Matrix local_solution(_solution._rows, _solution._cols, 0.f);
 
@@ -228,7 +229,7 @@ namespace LP {
                     solve(pivot_at(this->_tableau, pivot, target_row), local_solution);
 
                     // Better solution found, so copy it over.
-                    if (local_solution(0, local_solution._cols - 1) >= this->_solution(0, local_solution._cols - 1)) {
+                    if (local_solution(0, last) >= this->_solution(0, last)) {
                         for (size_t j = 0; j < local_solution._cols; j++) {
                             this->_solution(0, j) = local_solution(0, j);
                         }
@@ -237,7 +238,7 @@ namespace LP {
                     pivot = find_pivot_column(this->_tableau);
                 }
 
-                return std::move(_solution);
+                return _solution;
             }
     };
 };
