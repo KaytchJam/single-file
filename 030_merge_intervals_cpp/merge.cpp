@@ -42,7 +42,7 @@ Interval merge(const Interval& a, const Interval& b) {
     };
 }
 
-inline int32_t first_non_overlapping_interval(const std::vector<Interval>& ivals, const Interval& candidate) {
+inline int32_t first_non_overlapping_interval_idx(const std::vector<Interval>& ivals, const Interval& candidate) {
     return std::distance(
         ivals.begin(), std::lower_bound(
             ivals.begin(), ivals.end(), candidate.end, [](const Interval& other, const int32_t end) {
@@ -71,7 +71,7 @@ int main() {
         bool candidate_fin = false;
 
         while (!candidate_fin) {
-            const int32_t bound = first_non_overlapping_interval(ivals, candidate);
+            const int32_t bound = first_non_overlapping_interval_idx(ivals, candidate);
             int32_t ptr = bound;
 
             while (ptr != lower) {
