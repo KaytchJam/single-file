@@ -57,7 +57,7 @@ typedef std::vector<Interval>::iterator IntervalIter;
 int main() {
     std::vector<Interval> ivals = {{10, 25}, {20, 30}, {25, 35}, {40, 45}, {30, 41}, {50, 60}};
 
-    // create our result buffer. capacity if our upper bound
+    // create our result buffer. capacity is our upper bound
     std::vector<Interval> result;
     result.reserve(ivals.size());
 
@@ -66,7 +66,7 @@ int main() {
     print_intervals(ivals, "SORT");
 
     int32_t lower = 0;
-    while (lower != (int32_t) ivals.size()) {
+    while (lower < (int32_t) ivals.size()) {
         Interval candidate = ivals[lower];
         bool candidate_fin = false;
 
