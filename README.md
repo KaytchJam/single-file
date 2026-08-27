@@ -24,14 +24,14 @@ python <file_name>
 Truthfully, most of these are written on a whim. With that said, I think it showcases just how many things you can sit down and write some code about.
 
 ### Data Structure Scripts
-Scripts like red_black_tree_c, lp_hash_table_rs, string_interval_rs, and arena_cpp explore data structures: a red black tree, an “open” linear-probe based hash table in rust, a large string “pool” that tracks each string’s interval/range, and a bump arena allocator in C++ that’s compatible with the standard library. There’s also add_tree_java which was kind of a joke file, but can also be considered a data structure for operation trees. 
+Scripts like **red_black_tree_c**, **lp_hash_table_rs**, **string_interval_rs**, and **arena_cpp** explore data structures: a red black tree, an “open” linear-probe based hash table in rust, a large string “pool” that tracks each string’s interval/range, and a bump arena allocator in C++ that’s compatible with the standard library. There’s also **add_tree_java** which was kind of a joke file, but can also be considered a data structure for operation trees. 
 
 Due to the impromptu nature of most of these files, they’ll have a lot of fluff or extra stuff beyond the initial intent of the file. For example, arena_cpp also contains a simple Binary Search Tree written implementation that takes in an allocator, along with a templated Binary Tree type trait struct `BinaryTreeTraits`, and an iterator struct `InOrderTraversal` that works on any type that defines `BinaryTreeTraits` and supports the passing in of a scratch allocator. If you go through the files and think, “why is this here”, 9/10 times it’s me fucking around.
 
 #### Numerical Method Scripts
-Scripts like lagrange_py and simplex_cpp are devoted to numerical methods, and were written while reading through articles on math.libretexts.org. 
+Scripts like **lagrange_py** and simplex_cpp are devoted to numerical methods, and were written while reading through articles on math.libretexts.org. 
 
-The former script implements Lagrange Polynomial Interpolation as a simple class in Python, taking a list of discrete x and y points and fitting them to a continuous model/curve that can be sampled from.The libretexts article used for reference is 3.2 Polynomial Interpolation. 
+The former script implements Lagrange Polynomial Interpolation as a simple class in Python, taking a list of discrete x and y points and fitting them to a continuous model/curve that can be sampled from. The libretexts article used for reference is 3.2 Polynomial Interpolation. 
 
 The latter on the other hand is a rough implementation of the simplex algorithm for linear programming, which in of itself is an approach to solving linear optimization problems where you have a certain number of constraints and seek to maximize or minimize a particular value. The libretexts series used for reference is 7 Linear Programming. In the code I only actually implement the maximization variant, so… while I hardly doubt anyone will actually use this, if you try to solve a minimization problem with it and it doesn’t work, I apologize in advance.
 
