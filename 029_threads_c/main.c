@@ -18,11 +18,12 @@ Counter init(int count) {
     return c;
 }
 
-bool increment_if_less_than(Counter* c, int upper_limit) {
+bool increment_if_less_than(Counter* c, int* contribution, int upper_limit) {
     bool increment_occurred = false;
     pthread_mutex_lock(&c->lock);
     if (c->count < upper_limit) {
         c->count += 1;
+        *contribution += 1;
         increment_occurred = true;
     }
     pthread_mutex_unlock(&c->lock);
@@ -57,12 +58,13 @@ int getprint(Counter* c) {
 typedef struct ThreadArgs {
     Counter* c;
     int n;
+    int contribution;
 } ThreadArgs;
 
 /** Adds to the counter until it equals 10 */
 void add_till_n(void* args) {
     ThreadArgs* targs = (ThreadArgs*) args;
-    while (increment_if_less_than(targs->c, targs->n)) {}
+    while (increment_if_less_than(targs->c, &targs->contribution, targs->n)) {}
 }
 
 /** Return type for stoi. If a failure occurs, `is_int32` will be false. If successful, `is_int32` will be true. */
@@ -111,6 +113,19 @@ StringToInt32Result string_to_int32(char* number_maybe) {
     return res;
 }
 
+int32_t sum_all_contributions(const ThreadArgs* all_args, const int size) {
+    if (all_args == NULL) {
+        return -1;
+    }
+
+    int32_t total = 0;
+    for (int i = 0; i < size; i++) {
+        total += all_args[i].contribution;
+    }
+
+    return total;
+}
+
 int main(int argc, char** argv) {
     // COMMAND LINE ARGUMENT PARSING
     int N = 100; // number to count towards
@@ -153,15 +168,18 @@ int main(int argc, char** argv) {
         ThreadArgs* current_args = all_args + i;
         current_args->c = &c;
         current_args->n = N;
+        current_args->contribution = 0;
         pthread_create(threads + i, NULL, (void*) add_till_n, current_args);
     }
 
     for (int i = 0; i < T; i++) {
         pthread_join(threads[i], NULL);
-        printf("Thread %d Done.\n", i + 1);
+        printf("Thread %d Done. Contributed = %d\n", i + 1, all_args[i].contribution);
     }
 
-    printf("Final count: %d", c.count);
-
+    printf("Final count: %d\n", c.count);
+    printf("Contribution sum = %d\n", sum_all_contributions(all_args, T));
+    free(threads);
+    free(all_args);
     return 0;
 }
