@@ -28,7 +28,7 @@ Scripts like **red_black_tree_c**, **lp_hash_table_rs**, **string_interval_rs**,
 
 Due to the impromptu nature of most of these files, they’ll have a lot of fluff or extra stuff beyond the initial intent of the file. For example, arena_cpp also contains a simple Binary Search Tree written implementation that takes in an allocator, along with a templated Binary Tree type trait struct `BinaryTreeTraits`, and an iterator struct `InOrderTraversal` that works on any type that defines `BinaryTreeTraits` and supports the passing in of a scratch allocator. If you go through the files and think, “why is this here”, 9/10 times it’s me fucking around.
 
-#### Numerical Method Scripts
+### Numerical Method Scripts
 Scripts like **lagrange_py** and **simplex_cpp** are devoted to numerical methods, and were written while reading through articles on math.libretexts.org. 
 
 The former script implements Lagrange Polynomial Interpolation as a simple class in Python, taking a list of discrete x and y points and fitting them to a continuous model/curve that can be sampled from. The libretexts article used for reference is [3.2 Polynomial Interpolation](https://math.libretexts.org/Courses/Angelo_State_University/Mathematical_Computing_with_Python/3%3A_Interpolation_and_Curve_Fitting/3.2%3A_Polynomial_Interpolation). 
