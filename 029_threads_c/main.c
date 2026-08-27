@@ -114,6 +114,7 @@ StringToInt32Result string_to_int32(char* number_maybe) {
     return res;
 }
 
+/** Sums all the contributions from all the threads */
 int32_t sum_all_contributions(const ThreadArgs* all_args, const int size) {
     if (all_args == NULL) {
         return -1;
