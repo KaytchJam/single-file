@@ -11,6 +11,10 @@ typedef struct Counter {
     pthread_mutex_t lock;
 } Counter;
 
+typedef struct AtomicCounter {
+    _Atomic int count;
+} AtomicCounter;
+
 Counter init(int count) {
     pthread_mutex_t mutex;
     pthread_mutex_init(&mutex, NULL);
@@ -18,7 +22,7 @@ Counter init(int count) {
     return c;
 }
 
-bool increment_if_less_than(Counter* c, int upper_limit) {
+bool increment_if_less_than(Counter* c, const int upper_limit) {
     bool increment_occurred = false;
     pthread_mutex_lock(&c->lock);
     if (c->count < upper_limit) {
@@ -27,6 +31,17 @@ bool increment_if_less_than(Counter* c, int upper_limit) {
     }
     pthread_mutex_unlock(&c->lock);
     return increment_occurred;
+}
+
+bool increment_if_less_than_ac(AtomicCounter* ac, const int upper_limit) {
+    const int cur = atomic_load(&ac->count);
+    while (cur < upper_limit) {
+        if (atomic_compare_exchange_weak(&ac->count, &cur, cur + 1)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 int increment(Counter* c) {
@@ -60,10 +75,24 @@ typedef struct ThreadArgs {
     int contribution;
 } ThreadArgs;
 
+typedef struct ThreadArgsWithAtomicCounter {
+    AtomicCounter* c;
+    int n;
+    int contribution;
+} ThreadArgsWithAtomicCounter;
+
 /** Adds to the counter until it equals 10 */
 void add_till_n(void* args) {
     ThreadArgs* targs = (ThreadArgs*) args;
     while (increment_if_less_than(targs->c, targs->n)) {
+        targs->contribution += 1;
+    }
+}
+
+/** Variant of `add_till_n` that uses Atomics instead of an entire Lock */
+void add_till_n_ac(void* args) {
+    ThreadArgsWithAtomicCounter* targs = (ThreadArgsWithAtomicCounter*) args;
+    while (increment_if_less_than_ac(targs->c, targs->n)) {
         targs->contribution += 1;
     }
 }
@@ -128,10 +157,26 @@ int32_t sum_all_contributions(const ThreadArgs* all_args, const int size) {
     return total;
 }
 
+/** Sums all the contributions from all the threads */
+int32_t sum_all_contributions_ac(const ThreadArgsWithAtomicCounter* all_args, const int size) {
+    if (all_args == NULL) {
+        return -1;
+    }
+
+    int32_t total = 0;
+    for (int i = 0; i < size; i++) {
+        total += all_args[i].contribution;
+    }
+
+    return total;
+}
+
 int main(int argc, char** argv) {
     // COMMAND LINE ARGUMENT PARSING
     int N = 100; // number to count towards
     int T = 2; // number of threads
+    bool A = false; // Atomic Counter flag
+
     bool arg_set = false;
     for (int i = 0; i < argc; i++) {
         const char* cur = argv[i];
@@ -148,6 +193,8 @@ int main(int argc, char** argv) {
             if (outcome.is_int32) {
                 T = outcome.value;
             }
+        } else if (strcmp(cur, "-a") == 0) {
+            A = true;
         }
     }
 
@@ -162,31 +209,56 @@ int main(int argc, char** argv) {
     printf("===\n");
 
     pthread_t* threads = (pthread_t*) malloc(sizeof(pthread_t) * T);
-    ThreadArgs* all_args = (ThreadArgs*) malloc(sizeof(ThreadArgs) * T);
-
-    if (threads == NULL || all_args == NULL) {
+    
+    if (threads == NULL) {
         printf("Failed to allocate the necessary amount of memory...\n");
         return 1;
     }
-
-    Counter c = init(0);
-    for (int i = 0; i < T; i++) {
-        ThreadArgs* current_args = all_args + i;
-        current_args->c = &c;
-        current_args->n = N;
-        current_args->contribution = 0;
-        pthread_create(threads + i, NULL, (void*) add_till_n, current_args);
+    
+    if (!A) {
+        ThreadArgs* all_args = (ThreadArgs*) malloc(sizeof(ThreadArgs) * T);
+        Counter c = init(0);
+        for (int i = 0; i < T; i++) {
+            ThreadArgs* current_args = all_args + i;
+            current_args->c = &c;
+            current_args->n = N;
+            current_args->contribution = 0;
+            pthread_create(threads + i, NULL, (void*) add_till_n, current_args);
+        }
+    
+        for (int i = 0; i < T; i++) {
+            pthread_join(threads[i], NULL);
+            printf("Thread %d Done. Contributed = %d\n", i + 1, all_args[i].contribution);
+        }
+    
+        printf("===\n");
+        printf("Final count: %d\n", c.count);
+        printf("Contribution Sum = %d\n", sum_all_contributions(all_args, T));
+        free(threads);
+        free(all_args);
+    } else {
+        ThreadArgsWithAtomicCounter* all_args = (ThreadArgsWithAtomicCounter*) malloc(sizeof(ThreadArgsWithAtomicCounter) * T);
+        AtomicCounter c = { .count = 0 }; 
+        for (int i = 0; i < T; i++) {
+            ThreadArgsWithAtomicCounter* current_args = all_args + i;
+            current_args->c = &c;
+            current_args->n = N;
+            current_args->contribution = 0;
+            pthread_create(threads + i, NULL, (void*) add_till_n_ac, current_args);
+        }
+    
+        for (int i = 0; i < T; i++) {
+            pthread_join(threads[i], NULL);
+            printf("Thread %d Done. Contributed = %d\n", i + 1, all_args[i].contribution);
+        }
+    
+        printf("===\n");
+        printf("Final count: %d\n", c.count);
+        printf("Contribution Sum = %d\n", sum_all_contributions_ac(all_args, T));
+        free(threads);
+        free(all_args);
     }
 
-    for (int i = 0; i < T; i++) {
-        pthread_join(threads[i], NULL);
-        printf("Thread %d Done. Contributed = %d\n", i + 1, all_args[i].contribution);
-    }
-
-    printf("===\n");
-    printf("Final count: %d\n", c.count);
-    printf("Contribution Sum = %d\n", sum_all_contributions(all_args, T));
-    free(threads);
-    free(all_args);
+    
     return 0;
 }
