@@ -18,12 +18,11 @@ Counter init(int count) {
     return c;
 }
 
-bool increment_if_less_than(Counter* c, int* contribution, int upper_limit) {
+bool increment_if_less_than(Counter* c, int upper_limit) {
     bool increment_occurred = false;
     pthread_mutex_lock(&c->lock);
     if (c->count < upper_limit) {
         c->count += 1;
-        *contribution += 1;
         increment_occurred = true;
     }
     pthread_mutex_unlock(&c->lock);
@@ -64,7 +63,9 @@ typedef struct ThreadArgs {
 /** Adds to the counter until it equals 10 */
 void add_till_n(void* args) {
     ThreadArgs* targs = (ThreadArgs*) args;
-    while (increment_if_less_than(targs->c, &targs->contribution, targs->n)) {}
+    while (increment_if_less_than(targs->c, targs->n)) {
+        targs->contribution += 1;
+    }
 }
 
 /** Return type for stoi. If a failure occurs, `is_int32` will be false. If successful, `is_int32` will be true. */
