@@ -152,10 +152,14 @@ int main(int argc, char** argv) {
     }
 
     if (!arg_set) {
-        printf("The default count is N = 100. You can set the count 'N' with: ./main -n <positive 32 byte integer>\n");
+        const char* n_alert = "The default count is N = 100. You can set the count 'N' with flag \"n\": -n <positive number>\n";
+        const char* t_alert = "The default # of threads is T = 2. You can set the number of threads 'T' with flag \"t\": -t <number of threads>\n";
+        printf("===\n%s%s===\n", n_alert, t_alert);
     }
 
     printf("N = %d\n", N);
+    printf("T = %d\n", T);
+    printf("===\n");
 
     pthread_t* threads = (pthread_t*) malloc(sizeof(pthread_t) * T);
     ThreadArgs* all_args = (ThreadArgs*) malloc(sizeof(ThreadArgs) * T);
@@ -179,8 +183,9 @@ int main(int argc, char** argv) {
         printf("Thread %d Done. Contributed = %d\n", i + 1, all_args[i].contribution);
     }
 
+    printf("===\n");
     printf("Final count: %d\n", c.count);
-    printf("Contribution sum = %d\n", sum_all_contributions(all_args, T));
+    printf("Contribution Sum = %d\n", sum_all_contributions(all_args, T));
     free(threads);
     free(all_args);
     return 0;
