@@ -10,6 +10,11 @@ Below is how to run/compile some of the languages used here.
 g++ <file_name> -o <executable_name>
 ```
 
+```C
+// C (GCC Compiler)
+gcc <file_name> -o <executable_name>
+```
+
 ```Rust
 // Rust
 rustc <file_name>
