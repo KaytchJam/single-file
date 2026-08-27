@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdatomic.h>
@@ -54,7 +55,6 @@ int getprint(Counter* c) {
 }
 
 typedef struct ThreadArgs {
-    pthread_t* p;
     Counter* c;
     int n;
 } ThreadArgs;
@@ -113,17 +113,23 @@ StringToInt32Result string_to_int32(char* number_maybe) {
 
 int main(int argc, char** argv) {
     // COMMAND LINE ARGUMENT PARSING
-    int N = 100;
+    int N = 100; // number to count towards
+    int T = 2; // number of threads
     bool arg_set = false;
     for (int i = 0; i < argc; i++) {
         const char* cur = argv[i];
         if (strcmp(cur, "-n") == 0 && i + 1 < argc) {
-            StringToInt32Result outcome = string_to_int32(argv[i+1]);
-            if (outcome.is_int32 == true) {
+            const StringToInt32Result outcome = string_to_int32(argv[i+1]);
+            if (outcome.is_int32) {
                 N = outcome.value;
                 arg_set = true;
             } else {
                 printf("Error during parse to int32: %s\n", outcome.error);
+            }
+        } else if (strcmp(cur, "-t") == 0 && i + 1 < argc) {
+            const StringToInt32Result outcome = string_to_int32(argv[i+1]);
+            if (outcome.is_int32) {
+                T = outcome.value;
             }
         }
     }
@@ -134,19 +140,26 @@ int main(int argc, char** argv) {
 
     printf("N = %d\n", N);
 
-    pthread_t p1, p2;
+    pthread_t* threads = (pthread_t*) malloc(sizeof(pthread_t) * T);
+    ThreadArgs* all_args = (ThreadArgs*) malloc(sizeof(ThreadArgs) * T);
+
+    if (threads == NULL || all_args == NULL) {
+        printf("Failed to allocate the necessary amount of memory...\n");
+        return 1;
+    }
+
     Counter c = init(0);
-    ThreadArgs args1 = { &p1, &c, N };
-    ThreadArgs args2 = { &p2, &c, N  };
+    for (int i = 0; i < T; i++) {
+        ThreadArgs* current_args = all_args + i;
+        current_args->c = &c;
+        current_args->n = N;
+        pthread_create(threads + i, NULL, (void*) add_till_n, current_args);
+    }
 
-    pthread_create(&p1, NULL, (void*) add_till_n, &args1);
-    pthread_create(&p2, NULL, (void*) add_till_n, &args2);
-
-    pthread_join(p1, NULL);
-    printf("Thread 1 Done.\n");
-
-    pthread_join(p2, NULL);
-    printf("Thread 2 Done.\n");
+    for (int i = 0; i < T; i++) {
+        pthread_join(threads[i], NULL);
+        printf("Thread %d Done.\n", i + 1);
+    }
 
     printf("Final count: %d", c.count);
 
