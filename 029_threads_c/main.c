@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdatomic.h>
 
 typedef struct Counter {
     int count;
@@ -16,9 +17,16 @@ Counter init(int count) {
     return c;
 }
 
-// bool increment_if_less_than(Counter* c, int upper_limit) {
-//     bool 
-// }
+bool increment_if_less_than(Counter* c, int upper_limit) {
+    bool increment_occurred = false;
+    pthread_mutex_lock(&c->lock);
+    if (c->count < upper_limit) {
+        c->count += 1;
+        increment_occurred = true;
+    }
+    pthread_mutex_unlock(&c->lock);
+    return increment_occurred;
+}
 
 int increment(Counter* c) {
     pthread_mutex_lock(&c->lock);
@@ -52,18 +60,19 @@ typedef struct ThreadArgs {
 } ThreadArgs;
 
 /** Adds to the counter until it equals 10 */
-void add_till_ten(void* args) {
+void add_till_n(void* args) {
     ThreadArgs* targs = (ThreadArgs*) args;
-    while (get(targs->c) < targs->n) {
-        increment(targs->c);
-    }
+    while (increment_if_less_than(targs->c, targs->n)) {}
 }
 
+/** Return type for stoi. If a failure occurs, `is_int32` will be false. If successful, `is_int32` will be true. */
 typedef struct StringToInt32Result {
     int value;
     bool is_int32;
+    const char* error;
 } StringToInt32Result;
 
+/** My very own stoi. (with no negatives allowed) */
 StringToInt32Result string_to_int32(char* number_maybe) {
     StringToInt32Result res;
     res.value = 0;
@@ -71,18 +80,19 @@ StringToInt32Result string_to_int32(char* number_maybe) {
 
     if (number_maybe == NULL) {
         res.is_int32 = false;
+        res.error = "Input paramter `number_maybe` was NULL.";
         return res;
     }
 
     int64_t value = 0;
     int8_t digit = 0;
-    while (*number_maybe != '\0' && digit < 31) {
+    while (*number_maybe != '\0' && digit < 10) {
         const char cur = *number_maybe;
         if ('0' <= cur && cur <= '9') {
-            const int int_cur = (int) (cur - '0');
-            value = value * 10 + (int64_t) int_cur;
+            value = value * 10 + (int64_t) (cur - '0');
         } else {
             res.is_int32 = false;
+            res.error = "Input parameter has non-numeric character.";
             return res;
         }
 
@@ -90,54 +100,55 @@ StringToInt32Result string_to_int32(char* number_maybe) {
         number_maybe += 1;
     }
 
-    if (digit > 31 || value > (int64_t) INT_MAX) {
+    if (value > (int64_t) INT32_MAX) {
         res.is_int32 = false;
+        res.error = "Input parameter is larger than largest valid 32 bit integer (2147483647).";
         return res;
     }
 
     res.value = (int32_t) value;
+    res.error = "String successful parsed.";
     return res;
 }
 
 int main(int argc, char** argv) {
+    // COMMAND LINE ARGUMENT PARSING
     int N = 100;
     bool arg_set = false;
     for (int i = 0; i < argc; i++) {
         const char* cur = argv[i];
         if (strcmp(cur, "-n") == 0 && i + 1 < argc) {
             StringToInt32Result outcome = string_to_int32(argv[i+1]);
-            if (outcome.is_int32) {
+            if (outcome.is_int32 == true) {
                 N = outcome.value;
                 arg_set = true;
+            } else {
+                printf("Error during parse to int32: %s\n", outcome.error);
             }
         }
     }
 
     if (!arg_set) {
-        printf("The default count is N = 100. You can set the count 'N' with: ./main -n <count>\n");
+        printf("The default count is N = 100. You can set the count 'N' with: ./main -n <positive 32 byte integer>\n");
     }
 
     printf("N = %d\n", N);
 
-    // pthread_t p1;
-    // pthread_t p2;
+    pthread_t p1, p2;
+    Counter c = init(0);
+    ThreadArgs args1 = { &p1, &c, N };
+    ThreadArgs args2 = { &p2, &c, N  };
 
+    pthread_create(&p1, NULL, (void*) add_till_n, &args1);
+    pthread_create(&p2, NULL, (void*) add_till_n, &args2);
 
-    // Counter c = init(0);
-    // ThreadArgs args1 = { &p1, &c, N };
-    // ThreadArgs args2 = { &p2, &c, N  };
+    pthread_join(p1, NULL);
+    printf("Thread 1 Done.\n");
 
-    // pthread_create(&p1, NULL, (void*) add_till_ten, &args1);
-    
-    // pthread_create(&p2, NULL, (void*) add_till_ten, &args2);
+    pthread_join(p2, NULL);
+    printf("Thread 2 Done.\n");
 
-    // pthread_join(p1, NULL);
-    // printf("Thread 1 Done.\n");
-
-    // pthread_join(p2, NULL);
-    // printf("Thread 2 Done.\n");
-
-    // printf("Final count: %d", c.count);
+    printf("Final count: %d", c.count);
 
     return 0;
 }
