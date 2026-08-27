@@ -29,14 +29,14 @@ Scripts like **red_black_tree_c**, **lp_hash_table_rs**, **string_interval_rs**,
 Due to the impromptu nature of most of these files, they’ll have a lot of fluff or extra stuff beyond the initial intent of the file. For example, arena_cpp also contains a simple Binary Search Tree written implementation that takes in an allocator, along with a templated Binary Tree type trait struct `BinaryTreeTraits`, and an iterator struct `InOrderTraversal` that works on any type that defines `BinaryTreeTraits` and supports the passing in of a scratch allocator. If you go through the files and think, “why is this here”, 9/10 times it’s me fucking around.
 
 #### Numerical Method Scripts
-Scripts like **lagrange_py** and simplex_cpp are devoted to numerical methods, and were written while reading through articles on math.libretexts.org. 
+Scripts like **lagrange_py** and **simplex_cpp** are devoted to numerical methods, and were written while reading through articles on math.libretexts.org. 
 
 The former script implements Lagrange Polynomial Interpolation as a simple class in Python, taking a list of discrete x and y points and fitting them to a continuous model/curve that can be sampled from. The libretexts article used for reference is 3.2 Polynomial Interpolation. 
 
 The latter on the other hand is a rough implementation of the simplex algorithm for linear programming, which in of itself is an approach to solving linear optimization problems where you have a certain number of constraints and seek to maximize or minimize a particular value. The libretexts series used for reference is 7 Linear Programming. In the code I only actually implement the maximization variant, so… while I hardly doubt anyone will actually use this, if you try to solve a minimization problem with it and it doesn’t work, I apologize in advance.
 
 ### Language Feature Scripts
-The scripts dedicated to learning language features tend to be in C++, for obvious reasons. The language has way too many features. It’s very cool to learn about though. Some scripts in this area that I would like to highlight are expression_template_cpp, iterator_adapters_cpp, and mixin_cpp.
+The scripts dedicated to learning language features tend to be in C++, for obvious reasons. The language has way too many features. It’s very cool to learn about though. Some scripts in this area that I would like to highlight are **expression_template_cpp**, **iterator_adapters_cpp**, and **mixin_cpp**.
 
 All three of these scripts revolve around a technique in C++ called the "Curiously Recursive Template Pattern,” which is when a child class is derived from a parent class that is templated on the child class itself ( e.g. `class Child : public Parent<Child> { … }` ). As it turns out, this parent-child class relationship lets you do a bunch of funky things.
 
@@ -47,21 +47,21 @@ Next we have iterator_adapters_cpp. Iterator adapters are iterators that take in
 Lastly we have mixins_cpp. A “Mixin” is a class that has access to methods of other classes with having to be the parent class of those other classes. In C++ this is made possible through multiple inheritance, variadic templates, and CRTP. Long story short, we implement a type `Mixin<A,B,C,...>` that has access to the methods of `A`, `B`, `C`, and so on.
 
 ### Graphics Scripts
-The scripts forward_kinematics_cpp and noise_c are both computer graphics related. Forward Kinematics is typically used in computer graphics and robotics to calculate the position of an arm/bone or a point relative to an arm given the rotation of a joint. 
+The scripts **forward_kinematics_cpp** and **noise_c** are both computer graphics related. Forward Kinematics is typically used in computer graphics and robotics to calculate the position of an arm/bone or a point relative to an arm given the rotation of a joint. 
 
 In forward_kinematics_cpp I implement basic vec3 & mat3 types, along with a simple example of configuring an arm’s basis & transformation matrices propagate rotations along the arm properly. You can see a 2d desmos visualization of the implementation here.
 
 In noise_c we have an implementation of Value Noise in C. Value noise is a randomly generated signal that is designed to be smooth and continuous. If you’ve ever played minecraft, they use a similar kind of noise called ‘perlin noise’ to randomly generate terrain. This script supports various command line flags: a random seed, initial number of values, octaves of noise to apply, the period of the fundamental frequency/signal, the resolution of the signal (which scales both the number of values and the period), the amplitude of the signal, vertical translation of the signal, and interpolation method to apply during value noise (“linear” or “cubic-hermit interpolation/smoothstep”). Once again I have a 2d desmos visualization to accompany this script, which can be found here.
 
 ### Operating System Features
-For lack of a better name, I’m choosing to call the scripts in this section “Operating System Features.” Scripts like virt_cpp and threads_c play with some OS feature or try to mimic one. 
+For lack of a better name, I’m choosing to call the scripts in this section “Operating System Features.” Scripts like **virt_cpp** and **threads_c** play with some OS feature or try to mimic one. 
 
 virt_cpp is an attempt at mimicking the paging system (in a single file of course). RAM and Disk memory are represented as simple arrays of characters. The kernel and individual processes are all represented with minimal structs. We have virtual page numbers (or more accurately, virtual page indices), page loading, page storing, page eviction, a bootleg free list of pages, and a bootleg translation look aside buffer for every process!
 
 threads_c is a simple thread safe counter using locks. There’s not much else to it! There are some command line arguments that can be set. Flag -n <number> sets the count, and flag -t <number> sets the number of threads in play. Finally, the flag -a lets you set whether you’d like to use the normal mutex/lock based approach, or if you want to use the atomic_exchange_weak version instead.
 
 ### Misc.
-A few scripts don’t fit anywhere. pkmn_type_chart_rs, and igenous_rock_cpp (yes, there’s a typo in the file name) are examples of this. 
+A few scripts don’t fit anywhere. **pkmn_type_chart_rs**, and **igenous_rock_cpp** (yes, there’s a typo in the file name) are examples of this. 
 
 pkmn_type_chart_rs is a pokemon type chart simulator that represents the type chart as a message passing graph. An input type is passed in, values are broadcast from node to node in the graph, and out comes the weaknesses a pokemon with those input type(s) would have. 
 
