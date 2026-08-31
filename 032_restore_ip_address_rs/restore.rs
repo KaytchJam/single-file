@@ -1,7 +1,6 @@
 use std::env;
 use std::fmt;
 
-
 /** Vec wrapper type for sole use as a Stack */
 #[derive(Debug)]
 struct Stack<T> {
