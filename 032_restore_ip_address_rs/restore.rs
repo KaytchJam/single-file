@@ -138,14 +138,12 @@ fn restore_ip_addresses(string: &str) -> Vec<String> {
 }
 
 fn main() {
-    let arguments: Vec<String> = env::args().collect::<Vec<String>>();
-
-    let mut ip_string: &str = "0000";
+    let mut ip_string: String = String::from("0000");
     let mut ip_updated: bool = false;
 
-    for argument in arguments.iter() {
+    for argument in env::args() {
         if argument.chars().all(char::is_numeric) {
-            ip_string = argument.as_str();
+            ip_string = argument;
             ip_updated = true;
         }
     }
@@ -154,17 +152,14 @@ fn main() {
         println!("Default input = \"{}\" is being used. Pass in a string of digits with length 1-12 as a cmd line argument, EX: \"123123123123\".", ip_string);
     }
 
-    let addresses: Vec<String> = restore_ip_addresses(ip_string);
-
-    println!("===");
-
+    let addresses: Vec<String> = restore_ip_addresses(&ip_string);
+    println!("============");
     if addresses.len() == 0 {
         println!("No valid IP addresses could be formed from the passed in string \"{}\"", ip_string);
     } else {
         println!("IP Addresses Produced from string \"{}\":", ip_string);
-    }
-    
-    for (idx, address) in addresses.iter().enumerate() {
-        println!("ADDRESS #{}: \"{}\"", idx + 1, address);
+        for (idx, address) in addresses.iter().enumerate() {
+            println!("ADDRESS #{}: \"{}\"", idx + 1, address);
+        }
     }
 }
