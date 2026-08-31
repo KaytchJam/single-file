@@ -1,5 +1,6 @@
 use std::env;
 use std::fmt;
+use std::str;
 
 /** Vec wrapper type for sole use as a Stack */
 #[derive(Debug)]
@@ -137,6 +138,89 @@ fn restore_ip_addresses(string: &str) -> Vec<String> {
     return solutions;
 }
 
+/** Helper struct for zero padding integers when printing */
+struct ZeroPadder {
+    max_number: usize,
+    buffer: Vec<u8>
+}
+
+/** Zero pads  */
+impl ZeroPadder {
+    /** Binary exponentiation from: https://cp-algorithms.com/algebra/binary-exp.html */
+    fn pow_binary(mut base: usize, mut exp: usize) -> usize {
+        let mut out: usize = 1;
+        while exp > 0 {
+            if (exp & 0x1) == 1 {
+                out *= base;
+            }
+            base *= base;
+            exp >>= 1;
+        }
+        return out;
+    }
+
+    /** Counts the number of digits in a `usize` */
+    fn count_digits(mut num: usize) -> usize {
+        let mut digits: usize = 0;
+        while num != 0 {
+            num /= 10;
+            digits += 1;
+        }
+        return if digits == 0 { 1 } else { digits }; // 0 will have 1 digit :)
+    }
+
+    /** Don't pass in 0 for digits or you get nothing. */
+    fn new(digits: usize) -> Option<ZeroPadder> {
+        if digits == 0 { return None; }
+        
+        return Some(
+            ZeroPadder { 
+                max_number: Self::pow_binary(10, digits), 
+                buffer: vec!['0' as u8; digits]
+            }
+        );
+    }
+    
+    /** Obtain a view/slice of the ZeroPadder's buffer as a string slice. */
+    fn get_buffer_slice<'owner>(&'owner self) -> &'owner str {
+        return str::from_utf8(self.buffer.as_slice()).unwrap();
+    }
+
+    /** Returns the max number of digits this ZeroPadder supports */
+    fn max_digits(&self) -> usize {
+        return self.buffer.len();
+    }
+
+    /** Returns the amount of extra padding needed if rendering `num` */
+    fn extra_padding(&self, num: usize) -> usize {
+        if num > self.max_number { return 0; }
+        return self.max_digits() - Self::count_digits(num);
+    }
+
+    /** Given a `usize` num, renders the number as a string with `extra_padding(num)` amounts
+        of zero-padding. */
+    fn render<'owner>(&'owner mut self, mut num: usize) -> &'owner str {
+        if num > self.max_number {
+            self.buffer.fill('9' as u8);
+            return self.get_buffer_slice();
+        }
+
+        let mut idx: usize = self.buffer.len();
+        while num > 0 {
+            let value: u8 = (num % 10) as u8 + 0x30;
+            self.buffer[idx - 1] = value;
+            num /= 10;
+            idx -= 1;
+        }
+        
+        for i in 0..idx {
+            self.buffer[i] = 0x30u8;
+        }
+
+        return self.get_buffer_slice();
+    }
+}
+
 fn main() {
     let mut ip_string: String = String::from("0000");
     let mut ip_updated: bool = false;
@@ -158,8 +242,9 @@ fn main() {
         println!("No valid IP addresses could be formed from the passed in string \"{}\"", ip_string);
     } else {
         println!("IP Addresses Produced from string \"{}\":", ip_string);
+        let mut padder: ZeroPadder = ZeroPadder::new(ZeroPadder::count_digits(addresses.len())).unwrap();
         for (idx, address) in addresses.iter().enumerate() {
-            println!("ADDRESS #{}: \"{}\"", idx + 1, address);
+            println!("ADDRESS #{}: \"{}\"", padder.render(idx + 1), address);
         }
     }
 }
